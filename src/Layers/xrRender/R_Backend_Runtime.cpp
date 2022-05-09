@@ -9,7 +9,9 @@
 #endif
 
 #if defined(USE_DX9) || defined(USE_DX11)
+#ifdef _WIN32
 #include <DirectXMath.h>
+#endif
 #endif
 
 void CBackend::OnFrameEnd()
@@ -162,10 +164,10 @@ void CBackend::set_ClipPlanes(u32 _enable, Fplane* _planes /*=NULL */, u32 count
     if (count > HW.Caps.geometry.dwClipPlanes)
         count = HW.Caps.geometry.dwClipPlanes;
 
-    using namespace DirectX;
+    //using namespace DirectX;
 
-    const XMMATRIX transform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&Device.mFullTransform));
-    XMMATRIX worldToClipMatrixIT = XMMatrixInverse(nullptr, transform);
+    const D3DMATRIX transform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&Device.mFullTransform));
+    D3DMATRIX worldToClipMatrixIT = XMMatrixInverse(nullptr, transform);
     worldToClipMatrixIT = XMMatrixTranspose(worldToClipMatrixIT);
 
     for (u32 it = 0; it < count; it++)
