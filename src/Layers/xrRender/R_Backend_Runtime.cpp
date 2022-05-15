@@ -11,6 +11,11 @@
 #if defined(USE_DX9) || defined(USE_DX11)
 #ifdef _WIN32
 #include <DirectXMath.h>
+#else
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/matrix_access.hpp"
 #endif
 #endif
 
@@ -166,16 +171,16 @@ void CBackend::set_ClipPlanes(u32 _enable, Fplane* _planes /*=NULL */, u32 count
 
     //using namespace DirectX;
 
-    const D3DMATRIX transform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&Device.mFullTransform));
-    D3DMATRIX worldToClipMatrixIT = XMMatrixInverse(nullptr, transform);
-    worldToClipMatrixIT = XMMatrixTranspose(worldToClipMatrixIT);
+    const glm::mat4 transform = glm::make_mat4x4(&Device.mFullTransform.m[0][0]);
+    glm::mat4 worldToClipMatrixIT = glm::inverse(transform);
+    worldToClipMatrixIT = glm::transpose(worldToClipMatrixIT);
 
     for (u32 it = 0; it < count; it++)
     {
         Fplane& P = _planes[it];
-        XMFLOAT4 planeClip;
-        XMVECTOR planeWorld = XMPlaneNormalize(XMVectorSet(-P.n.x, -P.n.y, -P.n.z, -P.d));
-        XMStoreFloat4(&planeClip, XMPlaneTransform(planeWorld, worldToClipMatrixIT));
+        glm::vec4 planeClip;
+        glm::vec3 planeWorld = glm::normalize(glm::vec4(-P.n.x, -P.n.y, -P.n.z, -P.d));
+        planeClip = worldToClipMatrixIT * glm::vec4(planeWorld, 1);
         CHK_DX(HW.pDevice->SetClipPlane(it, reinterpret_cast<float*>(&planeClip)));
     }
 
